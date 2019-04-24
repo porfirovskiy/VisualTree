@@ -1,4 +1,4 @@
-*db[mysql]
+*db[mysql, buffer]
 mysql[engine, engine2]
 engine[innodb, archive]; engine2[blackhole, isam]
 blackhole[null]; isam[index, key]

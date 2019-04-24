@@ -8,6 +8,7 @@ class Parser {
 	private $closeSubDelimiter = ']';
 	private $childrenDelimiter = ',';
 	private $struct = [];
+	private $maxCount = 0;
 		
 	public function run() {
 		$struct = $this->getTreeStructure();
@@ -19,10 +20,11 @@ class Parser {
 			if ($counter == 0) {
 				reset($this->struct);
 				$parent = key($this->struct);
-				$textTree[] = "\n".$parent."\n";
-				$textTree[] = $this->generateVerticalLines(count($this->struct[$parent]))."\n";
+				$spaces = $this->generateSpaces();
+				$textTree[] = "\n".$spaces.$parent."\n";
+				$spaces = $this->generateCountedSpaces(intval(strlen($parent)/2) - 1);
+				$textTree[] = $spaces.$this->generateVerticalLines(count($this->struct[$parent]))."\n";
 			}
-			//echo '<pre>';var_dump($nodes);
 			foreach ($nodes as $node) {
 				if (isset($this->struct[$node])) {
 					$childrenString .= ' '.$node;
@@ -31,37 +33,15 @@ class Parser {
 					$childrenString .= ' '.$node;
 				}
 			}
-			$textTree[] = $childrenString."\n";
-			$textTree[] = $childrenStringUnder."\n";
+			$spaces = $this->generateCountedSpaces(intval(strlen($childrenString)/2) - 1);
+			$spaces2 = $this->generateCountedSpaces(intval(strlen($childrenString)/2) - 1);
+			$textTree[] = $spaces.$childrenString."\n";
+			$textTree[] = $spaces2.$childrenStringUnder."\n";
 			$counter++;
 		}
-		//die();
-		//echo '<pre>';var_dump($struct);die();
-		/*foreach ($data as $code) {
-			$parentParts = explode($this->mainDelimiter, trim(trim($code), $this->mainDelimiter));
-			$childrenString = '';
-			$childrenStringUnder = '';
-			foreach ($parentParts as $part) {
-				$splitedData = explode($this->subDelimiter, $part);
-				echo '<pre>';var_dump($splitedData);die();
-				$parent = $splitedData[0];
-				$children = trim($splitedData[1], $this->closeSubDelimiter);
-				$children = explode($this->childrenDelimiter, $children);
-				if ($counter === 0) {
-					$textTree[] = "\n".$parent."\n";
-					$textTree[] = $this->generateVerticalLines(count($children))."\n";
-				}
-				foreach ($children as $child) {
-					$childrenString .= ' '.$child;
-					$childrenStringUnder .= ' | ';
-				}
-			}
-			$textTree[] = $childrenString."\n";
-			$textTree[] = $childrenStringUnder."\n";
-		}*/
 		$fullTree = implode('', $textTree);
-		echo '<pre>';var_dump($textTree, $fullTree);die();
-		
+		echo $fullTree;
+		//echo '<pre>';var_dump($fullTree);die();
 	}
 	
 	private function getTreeStructure() {
@@ -78,6 +58,7 @@ class Parser {
 				$joinedChildren = array_merge($joinedChildren, $children);
 				$this->struct[trim($splitedData[0])] = $children;	
 			}
+			$this->setMaxCount($joinedChildren);
 			$modifiedStruct[] = $joinedChildren;
 		}
 		return $modifiedStruct;
@@ -89,6 +70,33 @@ class Parser {
 			$lines .= ' | ';
 		}
 		return $lines;
+	}
+	
+	private function setMaxCount($array) {
+		$currentCount = 0;
+		foreach($array as $string) {
+			$currentCount += strlen($string);
+		}
+		$currentCount += 3 * count($array);
+		if ($currentCount > $this->maxCount) {
+			$this->maxCount = $currentCount;
+		}
+	}
+	
+	private function generateSpaces() {
+		$spaces = '';
+		for($i = 0;$i < $this->maxCount;$i++) {
+			$spaces .= ' ';
+		}
+		return $spaces;
+	}
+	
+		private function generateCountedSpaces($count) {
+		$spaces = '';
+		for($i = 0;$i < ($this->maxCount - $count);$i++) {
+			$spaces .= ' ';
+		}
+		return $spaces;
 	}
 	
 }
