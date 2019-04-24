@@ -1,0 +1,4 @@
+*db[mysql]
+mysql[engine, engine2]
+engine[innodb, archive]; engine2[blackhole]
+blackhole[null]
