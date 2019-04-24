@@ -13,18 +13,20 @@ class Parser {
 		$struct = $this->getTreeStructure();
 		$textTree = [];
 		$counter = 0;
-		foreach ($struct as $parent => $nodes) {
+		foreach ($struct as $nodes) {
 			$childrenString = '';
 			$childrenStringUnder = '';
 			if ($counter == 0) {
+				reset($this->struct);
+				$parent = key($this->struct);
 				$textTree[] = "\n".$parent."\n";
-				$textTree[] = $this->generateVerticalLines(count($struct[$parent]))."\n";
+				$textTree[] = $this->generateVerticalLines(count($this->struct[$parent]))."\n";
 			}
 			//echo '<pre>';var_dump($nodes);
 			foreach ($nodes as $node) {
-				if (isset($struct[$node])) {
+				if (isset($this->struct[$node])) {
 					$childrenString .= ' '.$node;
-					$childrenStringUnder .= $this->generateVerticalLines(count($struct[$node]));
+					$childrenStringUnder .= $this->generateVerticalLines(count($this->struct[$node]));
 				} else {
 					$childrenString .= ' '.$node;
 				}
@@ -34,7 +36,7 @@ class Parser {
 			$counter++;
 		}
 		//die();
-		echo '<pre>';var_dump($struct);die();
+		//echo '<pre>';var_dump($struct);die();
 		/*foreach ($data as $code) {
 			$parentParts = explode($this->mainDelimiter, trim(trim($code), $this->mainDelimiter));
 			$childrenString = '';
