@@ -1,4 +1,2 @@
-*db[mysql, buffer]
-mysql[engine, engine2]
-engine[innodb, archive]; engine2[blackhole, isam]
-blackhole[null]; isam[index, key]
+*db[mysql, mssql];
+mysql[engine]=mssql[engine2, engine3]
