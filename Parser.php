@@ -13,99 +13,8 @@ class Parser {
 	private $uniqNames = [];
 	private $uniqEntities = [];
 	private $arrayStructure = [];
-		
+	
 	public function run() {
-		$struct = $this->getTreeStructure();
-		$textTree = [];
-		$counter = 0;
-		foreach ($struct as $nodes) {
-			$childrenString = '';
-			$childrenStringUnder = '';
-			if ($counter == 0) {
-				reset($this->struct);
-				$parent = key($this->struct);
-				$spaces = $this->generateSpaces();
-				$textTree[] = "\n".$spaces.$parent."\n";
-				$spaces = $this->generateCountedSpaces(intval(strlen($parent)/2) - 1);
-				$textTree[] = $spaces.$this->generateVerticalLines(count($this->struct[$parent]))."\n";
-			}
-			foreach ($nodes as $node) {
-				if (isset($this->struct[$node])) {
-					$childrenString .= ' '.$node;
-					$childrenStringUnder .= $this->generateVerticalLines(count($this->struct[$node]));
-				} else {
-					$childrenString .= ' '.$node;
-				}
-			}
-			$spaces = $this->generateCountedSpaces(intval(strlen($childrenString)/2) - 1);
-			$spaces2 = $this->generateCountedSpaces(intval(strlen($childrenString)/2) - 1);
-			$textTree[] = $spaces.$childrenString."\n";
-			$textTree[] = $spaces2.$childrenStringUnder."\n";
-			$counter++;
-		}
-		$fullTree = implode('', $textTree);
-		echo $fullTree;
-		//echo '<pre>';var_dump($fullTree);die();
-	}
-	
-	private function getTreeStructure() {
-		$data = file($this->codeFile);
-		$modifiedStruct = [];
-		foreach ($data as $line) {
-			$parentParts = explode($this->mainDelimiter, trim($line));
-			$joinedChildren = []; 
-			foreach ($parentParts as $part) {
-				$splitedData = explode($this->subDelimiter, $part);
-				$children = trim($splitedData[1], $this->closeSubDelimiter);
-				$children = explode($this->childrenDelimiter, $children);
-				$children = array_map('trim', $children);
-				$joinedChildren = array_merge($joinedChildren, $children);
-				$this->struct[trim($splitedData[0])] = $children;	
-			}
-			$this->setMaxCount($joinedChildren);
-			$modifiedStruct[] = $joinedChildren;
-		}
-		return $modifiedStruct;
-	}
-	
-	private function generateVerticalLines($count) {
-		$lines = '';
-		for($i = 0;$i < $count;$i++) {
-			$lines .= ' | ';
-		}
-		return $lines;
-	}
-	
-	private function setMaxCount($array) {
-		$currentCount = 0;
-		foreach($array as $string) {
-			$currentCount += strlen($string);
-		}
-		$currentCount += 3 * count($array);
-		if ($currentCount > $this->maxCount) {
-			$this->maxCount = $currentCount;
-		}
-	}
-	
-	private function generateSpaces() {
-		$spaces = '';
-		for($i = 0;$i < $this->maxCount;$i++) {
-			$spaces .= ' ';
-		}
-		return $spaces;
-	}
-	
-	private function generateCountedSpaces($count) {
-		$spaces = '';
-		for($i = 0;$i < ($this->maxCount - $count);$i++) {
-			$spaces .= ' ';
-		}
-		return $spaces;
-	}
-	
-	
-	//new functionality!!!
-	public function run2() {
 		$codeString = $this->getCodeFromFile();
 		$this->getUniqNames($codeString);
 		$this->getUniqEntities($codeString);
@@ -146,6 +55,7 @@ class Parser {
 			$root = $this->getRoot($entity);
 			$children = $this->getChildren($entity);
 			$this->uniqEntities[$root] = $children;
+			$this->setMaxCount($children);
 		}
 	}
 	
@@ -154,9 +64,8 @@ class Parser {
 		$root = preg_replace('/\[/', '', trim($root[0][0]));
 		if (!empty($root)) {
 			return $root;
-		} else {
-			return '';
-		}	
+		}
+		return '';	
 	}
 	
 	public function getChildren($codeString) {
@@ -165,9 +74,8 @@ class Parser {
 		$children = array_map('trim', explode(',', $children));
 		if (!empty($children)) {
 			return $children;
-		} else {
-			return [];
-		}	
+		}
+		return [];	
 	}
 	
 	private function makeArrayStructure($codeString) {
@@ -185,11 +93,58 @@ class Parser {
 	}
 	
 	public function buildTree() {
-		
+		//echo '<pre>';var_dump($this->maxCount);die();
+		$spaces = $this->generateSpaces();
+		foreach ($this->arrayStructure as $level) {
+			if (count($level) == 1) {
+				$level = $level[0];
+				if (strpos($level, '*') !== false) {
+					echo $spaces.$level.PHP_EOL;
+				} else {
+					echo $spaces.'|'.PHP_EOL.$spaces.$level.PHP_EOL;
+				}
+			} else {
+				$spacesString = $spaces;
+				foreach ($level as $key => $element) {
+					if ($key == 0) {
+						$spacesString .= '|';
+					} else {
+						$spacesString .= $this->generateSpacesByLen(strlen($element) + 1).'|';
+					}
+				}
+				$spacesString = $spacesString.PHP_EOL.$spaces;
+				echo $spacesString.implode(' ', $level).PHP_EOL;
+			}
+		}
 	}
-	//echo '<pre>';var_dump($this->arrayStructure);die();
+	
+	private function setMaxCount($array) {
+		$currentCount = 0;
+		foreach($array as $string) {
+			$currentCount += strlen($string);
+		}
+		if ($currentCount > $this->maxCount) {
+			$this->maxCount = $currentCount;
+		}
+	}
+	
+	private function generateSpaces() {
+		$spaces = '';
+		for($i = 0;$i < $this->maxCount;$i++) {
+			$spaces .= ' ';
+		}
+		return $spaces;
+	}
+	
+	private function generateSpacesByLen($count) {
+		$spaces = '';
+		for($i = 0;$i < $count;$i++) {
+			$spaces .= ' ';
+		}
+		return $spaces;
+	}
 	
 }
 
 $parser = new Parser();
-$parser->run2();
+$parser->run();
