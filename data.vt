@@ -1,11 +1,13 @@
 *db[test];
 	test[mysql, mssql, oracle];
 	mysql[engine]
-	= mssql[ 
+	mssql[ 
 		engine2,
-			engine3]
-	= oracle[test];
-		engine3[dd, f]
-		= engine2[dd1, f1]
-		= test[]
+		engine3
+	]
+	oracle[test];
+		engine3[]
+		engine2[trouble]
+		test[];
+		   trouble[]
 		
